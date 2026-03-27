@@ -1,0 +1,44 @@
+subdivision,state,district,rainfall_mm,river_level_m,flood_level_m,flood_occurred,risk_level
+Andaman & Nicobar Islands,Andaman & Nicobar Islands,Port Blair,49.2,0.4,0.3,0,Low
+Arunachal Pradesh,Arunachal Pradesh,Itanagar,180.5,1.2,1.1,1,Medium
+Assam & Meghalaya,Assam,Guwahati,245.0,2.8,2.6,1,High
+Assam & Meghalaya,Meghalaya,Shillong,245.0,2.8,2.6,1,High
+Nagaland-Manipur-Mizoram-Tripura,Nagaland,Kohima,115.0,0.9,0.7,0,Low
+Nagaland-Manipur-Mizoram-Tripura,Manipur,Imphal,115.0,0.9,0.7,0,Low
+Nagaland-Manipur-Mizoram-Tripura,Mizoram,Aizawl,115.0,0.9,0.7,0,Low
+Nagaland-Manipur-Mizoram-Tripura,Tripura,Agartala,115.0,0.9,0.7,0,Low
+Sub-Himalayan West Bengal & Sikkim,West Bengal,Darjeeling,190.4,2.1,1.9,1,Medium
+Sub-Himalayan West Bengal & Sikkim,Sikkim,Gangtok,190.4,2.1,1.9,1,Medium
+Gangetic West Bengal,West Bengal,Kolkata,85.2,1.4,1.2,1,Medium
+Odisha,Odisha,Bhubaneswar,130.6,1.8,1.6,1,Medium
+Jharkhand,Jharkhand,Ranchi,65.4,0.5,0.4,0,Low
+Bihar (Riverine/Dam Risk),Bihar,Patna,42.0,3.2,2.8,1,High
+East Uttar Pradesh,Uttar Pradesh,Varanasi,75.2,2.1,1.8,1,Medium
+West Uttar Pradesh,Uttar Pradesh,Meerut,55.4,1.4,1.1,1,Medium
+Uttarakhand (Rain-Driven),Uttarakhand,Dehradun,310.0,3.5,3.1,1,High
+Haryana-Chandigarh-Delhi,Haryana,Gurgaon,45.2,1.2,0.9,0,Low
+Haryana-Chandigarh-Delhi,Delhi,New Delhi,45.2,1.2,0.9,0,Low
+Punjab,Punjab,Chandigarh,38.4,0.6,0.4,0,Low
+Himachal Pradesh,Himachal Pradesh,Shimla,140.2,2.4,2.2,1,High
+Jammu & Kashmir,Jammu & Kashmir,Srinagar,85.6,1.5,1.3,1,Medium
+West Rajasthan,Rajasthan,Jaisalmer,12.4,0.2,0.1,0,Low
+East Rajasthan,Rajasthan,Jaipur,55.2,0.8,0.6,0,Low
+West Madhya Pradesh,Madhya Pradesh,Indore,95.4,1.1,0.9,0,Low
+East Madhya Pradesh,Madhya Pradesh,Jabalpur,110.2,1.5,1.3,1,Medium
+Gujarat Region,Gujarat,Ahmedabad,115.6,1.4,1.2,1,Medium
+Saurashtra & Kutch,Gujarat,Rajkot,25.4,0.4,0.2,0,Low
+Konkan & Goa,Maharashtra,Mumbai,220.4,2.0,1.8,1,High
+Konkan & Goa,Goa,Panaji,220.4,2.0,1.8,1,High
+Madhya Maharashtra,Maharashtra,Pune,85.2,0.7,0.5,0,Low
+Marathwada,Maharashtra,Aurangabad,35.4,0.3,0.1,0,Low
+Vidarbha,Maharashtra,Nagpur,75.6,1.1,0.9,0,Low
+Chhattisgarh,Chhattisgarh,Raipur,90.4,1.2,1.1,0,Medium
+Coastal Andhra Pradesh & Yanam,Andhra Pradesh,Visakhapatnam,135.2,1.9,1.7,1,Medium
+Telangana,Telangana,Hyderabad,65.4,1.3,1.2,1,Medium
+Rayalaseema,Andhra Pradesh,Kurnool,45.2,0.6,0.4,0,Low
+Tamil Nadu-Puducherry-Karaikal,Tamil Nadu,Chennai,85.6,1.1,0.8,0,Low
+Coastal Karnataka,Karnataka,Mangalore,210.4,2.5,2.3,1,High
+North Interior Karnataka,Karnataka,Hubli,45.2,0.7,0.5,0,Low
+South Interior Karnataka,Karnataka,Bangalore,65.8,1.2,1.1,0,Medium
+Kerala (Rain/Dam Risk),Kerala,Kochi,350.0,4.2,3.8,1,High
+Lakshadweep,Lakshadweep,Kavaratti,55.4,0.5,0.3,0,Low
