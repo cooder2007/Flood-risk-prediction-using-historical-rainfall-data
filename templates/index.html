@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FloodSense AI</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<h1>🌊 FloodSense AI</h1>
+
+<div class="card">
+
+  <label>Rainfall (mm)</label>
+  <input type="number" id="rain" value="100">
+
+  <label>River Level (m)</label>
+  <input type="number" id="river" value="1.5">
+
+  <label>Flood Level (m)</label>
+  <input type="number" id="flood" value="1.2">
+
+  <label>Model</label>
+  <select id="model">
+    <option value="knn">KNN</option>
+    <option value="dt">Decision Tree</option>
+    <option value="lr">Logistic Regression</option>
+  </select>
+
+  <button onclick="predict()">Predict</button>
+
+</div>
+
+<div id="result"></div>
+
+<script>
+async function predict() {
+  const rain = document.getElementById('rain').value;
+  const river = document.getElementById('river').value;
+  const flood = document.getElementById('flood').value;
+  const model = document.getElementById('model').value;
+
+  const res = await fetch('/api/predict', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      rainfall_mm: rain,
+      river_level_m: river,
+      flood_level_m: flood,
+      model: model
+    })
+  });
+
+  const data = await res.json();
+
+  document.getElementById('result').innerHTML = `
+    <h2>Result</h2>
+    <p><b>Risk:</b> ${data.risk_level}</p>
+    <p><b>Score:</b> ${data.risk_score}</p>
+    <p><b>Model:</b> ${data.model_used} (${data.model_accuracy}%)</p>
+  `;
+}
+</script>
+
+</body>
+</html>
