@@ -1,40 +1,122 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>FloodSense AI</title>
   <link rel="stylesheet" href="/static/style.css">
+
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 
 <body>
 
 <h1>🌊 FloodSense AI</h1>
 
-<div class="card">
+<div class="container">
 
-  <label>Rainfall (mm)</label>
-  <input type="number" id="rain" value="100">
 
-  <label>River Level (m)</label>
-  <input type="number" id="river" value="1.5">
+  <div class="map-card">
+    <h2>India Flood Risk Map</h2>
+    <div id="map"></div>
+  </div>
 
-  <label>Flood Level (m)</label>
-  <input type="number" id="flood" value="1.2">
 
-  <label>Model</label>
-  <select id="model">
-    <option value="knn">KNN</option>
-    <option value="dt">Decision Tree</option>
-    <option value="lr">Logistic Regression</option>
-  </select>
+  <div class="card">
 
-  <button onclick="predict()">Predict</button>
+    <label>Rainfall (mm)</label>
+    <input type="number" id="rain" value="100">
+
+    <label>River Level (m)</label>
+    <input type="number" id="river" value="1.5">
+
+    <label>Flood Level (m)</label>
+    <input type="number" id="flood" value="1.2">
+
+    <label>Model</label>
+   
+    <select id="state">
+      <option value="UP">Uttar Pradesh</option>
+      <option value="MH">Maharashtra</option>
+      <option value="DL">Delhi</option>
+    </select>
+
+    <button onclick="predict()">⚡ Predict</button>
+
+    <div id="result"></div>
+
+  </div>
 
 </div>
 
 <div id="result"></div>
 
 <script>
+const STATE_URL = "/static/maps/india_states.geojson";
+
+
+const COLORS = {
+  Low: "#22c55e",
+  Medium: "#f59e0b",
+  High: "#ef4444"
+};
+
+
+function normalizeState(name){
+  const map = {
+    "Jammu and Kashmir": "Jammu & Kashmir",
+    "Andaman and Nicobar Islands": "Andaman & Nicobar Islands",
+    "NCT of Delhi": "Delhi",
+    "Orissa": "Odisha"
+  };
+  return map[name] || name;
+}
+
+
+async function loadMap() {
+  const width = 500;
+  const height = 600;
+
+  const svg = d3.select("#map")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  const geo = await fetch(STATE_URL).then(r => r.json());
+
+  const projection = d3.geoMercator().fitSize([width, height], geo);
+  const path = d3.geoPath().projection(projection);
+
+  svg.selectAll("path")
+    .data(geo.features)
+    .enter()
+    .append("path")
+    .attr("d", path)
+    .attr("fill", "#0f172a")
+    .attr("stroke", "#00c8ff")
+    .attr("stroke-width", 0.5)
+    .on("mouseover", function() {
+      d3.select(this).attr("fill", "#1e293b");
+    })
+    .on("mouseout", function() {
+      d3.select(this).attr("fill", "#0f172a");
+    })
+    .on("click", function(e, d) {
+      const state = normalizeState(
+        d.properties.st_nm || d.properties.NAME_1 || d.properties.name
+      );
+
+      document.getElementById("result").innerHTML =
+        `<p>📍 Selected: <b>${state}</b></p>`;
+    });
+}
+
+loadMap();
+
+
+
 async function predict() {
+const state = document.getElementById('state').value;
   const rain = document.getElementById('rain').value;
   const river = document.getElementById('river').value;
   const flood = document.getElementById('flood').value;
@@ -47,7 +129,8 @@ async function predict() {
       rainfall_mm: rain,
       river_level_m: river,
       flood_level_m: flood,
-      model: model
+      model: model,
+      state: state
     })
   });
 
@@ -55,7 +138,7 @@ async function predict() {
 
   document.getElementById('result').innerHTML = `
     <h2>Result</h2>
-    <p><b>Risk:</b> ${data.risk_level}</p>
+    <p><b>Risk:</b> <span style="color:${COLORS[data.risk_level]}">${data.risk_level}</span></p>
     <p><b>Score:</b> ${data.risk_score}</p>
     <p><b>Model:</b> ${data.model_used} (${data.model_accuracy}%)</p>
   `;
