@@ -11,11 +11,9 @@ import os
 
 app = Flask(__name__)
 
-# Load dataset
 DATA_FILE = os.path.join(os.path.dirname(__file__), 'flood_data.csv')
 df = pd.read_csv(DATA_FILE)
 
-# Prepare data
 features = ['rainfall_mm', 'river_level_m', 'flood_level_m']
 X = df[features].values
 y = df['risk_level'].values
@@ -30,7 +28,6 @@ X_train, X_test, y_train, y_test = train_test_split(
     X_scaled, y_enc, test_size=0.2, random_state=42
 )
 
-# Train models
 knn = KNeighborsClassifier(n_neighbors=3)
 knn.fit(X_train, y_train)
 
@@ -42,8 +39,8 @@ lr.fit(X_train, y_train)
 
 MODELS = {
     'knn': (knn, round(accuracy_score(y_test, knn.predict(X_test)) * 100, 1)),
-    'dt': (dt, round(accuracy_score(y_test, dt.predict(X_test)) * 100, 1)),
-    'lr': (lr, round(accuracy_score(y_test, lr.predict(X_test)) * 100, 1)),
+    'dt':  (dt,  round(accuracy_score(y_test, dt.predict(X_test))  * 100, 1)),
+    'lr':  (lr,  round(accuracy_score(y_test, lr.predict(X_test))  * 100, 1)),
 }
 
 @app.route('/')
@@ -58,33 +55,30 @@ def stats():
 def predict():
     data = request.get_json()
 
-    rain = float(data['rainfall_mm'])
+    rain  = float(data['rainfall_mm'])
     river = float(data['river_level_m'])
     flood = float(data['flood_level_m'])
     model_name = data.get('model', 'knn')
 
     X_input = scaler.transform([[rain, river, flood]])
-
     model, acc = MODELS.get(model_name, MODELS['knn'])
 
-    pred = model.predict(X_input)[0]
+    pred  = model.predict(X_input)[0]
     probs = model.predict_proba(X_input)[0]
-
     label = le.inverse_transform([pred])[0]
 
-    classes = list(le.classes_)
-    prob_dict = {classes[i]: round(float(p)*100, 1) for i, p in enumerate(probs)}
-
+    classes  = list(le.classes_)
+    prob_dict = {classes[i]: round(float(p) * 100, 1) for i, p in enumerate(probs)}
     score_map = {'Low': 25, 'Medium': 60, 'High': 90}
 
     return jsonify({
-        "risk_level": label,
-        "risk_score": score_map[label],
-        "probabilities": prob_dict,
-        "model_used": model_name.upper(),
+        "risk_level":     label,
+        "risk_score":     score_map[label],
+        "probabilities":  prob_dict,
+        "model_used":     model_name.upper(),
         "model_accuracy": acc,
-        "flood_likely": label != "Low"
+        "flood_likely":   label != "Low"
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=3000)   # ✅ FIX: match the port your browser uses
