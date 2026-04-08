@@ -40,29 +40,35 @@ It integrates:
 ### Backend
 - Python (Flask)
 - Scikit-learn (ML models)
-
+   
+   #### How to run backend:
+   Step 1: Run "pip install flask pandas scikit-learn numpy" in the terminal
+   Step 2: Run "python app.py"
 ---
+
+
 
 ## 📂 Project Structure
 
-FloodSense-AI/
-│
-├── app.py 
-│
-├── flood_data.csv
-│
-├── templates/
-│   └── index.html
-│
-├── static/
-│   ├── style.css
-│   └── maps/
-│       ├── india_district.geojson
-│       └── india_states.geojson
-│
+FloodSense-AI/                      
+│                              
+├── app.py      
+│             
+├── flood_data.csv            
+│            
+├── templates/            
+│   └── index.html                        
+│            
+├── static/            
+│   ├── style.css            
+│   └── maps/            
+│       ├── india_district.geojson            
+│       └── india_states.geojson            
+│            
 └── README.md
 
 ## 📂 Codes:
+
 ### app.py :
 from flask import Flask, request, jsonify, render_template
 import pandas as pd

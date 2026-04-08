@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>FloodSense AI</title>
-  <link rel="stylesheet" href="/static/style.css"><!-- FIX 1: was ../static/style.css -->
+  <link rel="stylesheet" href="/static/style.css">
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -30,7 +30,7 @@
       <input type="number" id="flood" value="1.2">
 
       <label>State</label>
-      <!-- FIX 2: All 32 states from flood_data.csv (was only 3) -->
+      
       <select id="state">
         <option value="Andaman & Nicobar Islands">Andaman &amp; Nicobar Islands</option>
         <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -145,7 +145,6 @@ async function loadMap() {
 
         const stateName = normalizeState(rawName);
 
-        // FIX 3: Map click now syncs the state dropdown
         const stateSelect = document.getElementById("state");
         let matched = false;
         for (let opt of stateSelect.options) {
@@ -170,12 +169,18 @@ async function loadMap() {
 loadMap();
 
 function renderCharts(probs) {
-  // FIX 4: Sort labels Low → Medium → High so colors always match correctly
   const ORDER = ['Low', 'Medium', 'High'];
   const entries = ORDER.filter(k => k in probs).map(k => [k, probs[k]]);
   const labels = entries.map(e => e[0]);
   const values = entries.map(e => e[1]);
 
+  const chartAnimation = {
+    duration: 1500,
+    easing: 'easeOutQuart',
+    delay: (context) => context.dataIndex * 150
+  };
+
+  
   if (barChartInstance) barChartInstance.destroy();
   barChartInstance = new Chart(document.getElementById('barChart'), {
     type: 'bar',
@@ -185,18 +190,20 @@ function renderCharts(probs) {
         label: 'Probability (%)',
         data: values,
         backgroundColor: labels.map(l => COLORS[l] || '#00c8ff'),
-        borderRadius: 6,
+        borderRadius: 8,
         borderSkipped: false
       }]
     },
     options: {
       responsive: true,
+      maintainAspectRatio: true,
+      animation: chartAnimation,
       plugins: { legend: { display: false } },
       scales: {
         y: {
           beginAtZero: true, max: 100,
           ticks: { color: '#cbd5e1', callback: v => v + '%' },
-          grid:  { color: '#1e293b' }
+          grid: { color: 'rgba(255, 255, 255, 0.05)' }
         },
         x: { ticks: { color: '#cbd5e1' }, grid: { display: false } }
       }
@@ -211,18 +218,30 @@ function renderCharts(probs) {
       datasets: [{
         data: values,
         backgroundColor: labels.map(l => COLORS[l] || '#00c8ff'),
-        borderColor: '#0a192f',
-        borderWidth: 3
+        borderColor: '#1e293b',
+        borderWidth: 4,
+        hoverOffset: 15 
       }]
     },
     options: {
       responsive: true,
+      maintainAspectRatio: true,
+      cutout: '70%',
+      animation: {
+        animateRotate: true,
+        animateScale: true,
+        duration: 2000,
+        easing: 'easeOutBounce'
+      },
       plugins: {
         legend: {
           position: 'bottom',
-          labels: { color: '#cbd5e1', padding: 12 }
+          labels: { color: '#cbd5e1', usePointStyle: true, padding: 15 }
         },
         tooltip: {
+          backgroundColor: '#0f172a',
+          titleColor: '#fff',
+          bodyColor: '#fff',
           callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}%` }
         }
       }
