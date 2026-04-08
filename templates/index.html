@@ -3,26 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>FloodSense AI</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css"><!-- FIX 1: was ../static/style.css -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
 
 <h1>🌊 FloodSense AI</h1>
 
 <div class="container">
 
-  
   <div class="map-card">
     <h2>India Flood Risk Map</h2>
     <div id="map"></div>
   </div>
 
-  
   <div class="right-panel">
-
     <div class="card">
       <label>Rainfall (mm)</label>
       <input type="number" id="rain" value="100">
@@ -34,10 +30,40 @@
       <input type="number" id="flood" value="1.2">
 
       <label>State</label>
+      <!-- FIX 2: All 32 states from flood_data.csv (was only 3) -->
       <select id="state">
-        <option value="UP">Uttar Pradesh</option>
-        <option value="MH">Maharashtra</option>
-        <option value="DL">Delhi</option>
+        <option value="Andaman & Nicobar Islands">Andaman &amp; Nicobar Islands</option>
+        <option value="Andhra Pradesh">Andhra Pradesh</option>
+        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+        <option value="Assam">Assam</option>
+        <option value="Bihar">Bihar</option>
+        <option value="Chhattisgarh">Chhattisgarh</option>
+        <option value="Delhi">Delhi</option>
+        <option value="Goa">Goa</option>
+        <option value="Gujarat">Gujarat</option>
+        <option value="Haryana">Haryana</option>
+        <option value="Himachal Pradesh">Himachal Pradesh</option>
+        <option value="Jammu & Kashmir">Jammu &amp; Kashmir</option>
+        <option value="Jharkhand">Jharkhand</option>
+        <option value="Karnataka">Karnataka</option>
+        <option value="Kerala">Kerala</option>
+        <option value="Lakshadweep">Lakshadweep</option>
+        <option value="Madhya Pradesh">Madhya Pradesh</option>
+        <option value="Maharashtra">Maharashtra</option>
+        <option value="Manipur">Manipur</option>
+        <option value="Meghalaya">Meghalaya</option>
+        <option value="Mizoram">Mizoram</option>
+        <option value="Nagaland">Nagaland</option>
+        <option value="Odisha">Odisha</option>
+        <option value="Punjab">Punjab</option>
+        <option value="Rajasthan">Rajasthan</option>
+        <option value="Sikkim">Sikkim</option>
+        <option value="Tamil Nadu">Tamil Nadu</option>
+        <option value="Telangana">Telangana</option>
+        <option value="Tripura">Tripura</option>
+        <option value="Uttar Pradesh" selected>Uttar Pradesh</option>
+        <option value="Uttarakhand">Uttarakhand</option>
+        <option value="West Bengal">West Bengal</option>
       </select>
 
       <label>Model</label>
@@ -48,11 +74,9 @@
       </select>
 
       <button onclick="predict()">⚡ Predict</button>
-
       <div id="result"></div>
     </div>
 
-    
     <div class="charts-row" id="charts-section" style="display:none;">
       <div class="chart-card">
         <h3>📊 Risk Probability — Bar</h3>
@@ -63,75 +87,95 @@
         <canvas id="pieChart"></canvas>
       </div>
     </div>
-
   </div>
 
 </div>
-<script>
 
+<script>
 const STATE_URL = "/static/maps/india_states.geojson";
 const COLORS = { Low: "#22c55e", Medium: "#f59e0b", High: "#ef4444" };
-const CHART_COLORS = ["#22c55e", "#f59e0b", "#ef4444"];
 
 let barChartInstance = null;
 let pieChartInstance = null;
 
-
 function normalizeState(name) {
   if (!name) return "Unknown";
   const map = {
-    "Jammu and Kashmir":            "Jammu & Kashmir",
-    "Andaman and Nicobar Islands":  "Andaman & Nicobar Islands",
-    "NCT of Delhi":                 "Delhi",
-    "Orissa":                       "Odisha"
+    "Jammu and Kashmir":           "Jammu & Kashmir",
+    "Andaman and Nicobar Islands": "Andaman & Nicobar Islands",
+    "NCT of Delhi":                "Delhi",
+    "Orissa":                      "Odisha"
   };
   return map[name] || name;
 }
 
-
 async function loadMap() {
-  const width = 480, height = 560;
+  try {
+    const width = 480, height = 560;
 
-  const svg = d3.select("#map")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height);
+    const svg = d3.select("#map")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
 
-  const geo = await fetch(STATE_URL).then(r => r.json());
-  const projection = d3.geoMercator().fitSize([width, height], geo);
-  const path = d3.geoPath().projection(projection);
+    const res = await fetch(STATE_URL);
+    if (!res.ok) throw new Error(`GeoJSON fetch failed: ${res.status}`);
+    const geo = await res.json();
 
-  svg.selectAll("path")
-    .data(geo.features)
-    .enter()
-    .append("path")
-    .attr("d", path)
-    .attr("fill", "#0f172a")
-    .attr("stroke", "#00c8ff")
-    .attr("stroke-width", 0.5)
-    .on("mouseover", function () { d3.select(this).attr("fill", "#1e293b"); })
-    .on("mouseout",  function () { d3.select(this).attr("fill", "#0f172a"); })
-    .on("click", function (e, d) {
-      const rawName =
-        d.properties.st_nm   ||
-        d.properties.NAME_1  ||
-        d.properties.name    ||
-        d.properties.State   ||
-        d.properties.state;
-      const state = normalizeState(rawName);
-      document.getElementById("result").innerHTML =
-        `<p class="selected-state">📍 Selected: <b>${state}</b></p>`;
-    });
+    const projection = d3.geoMercator().fitSize([width, height], geo);
+    const path = d3.geoPath().projection(projection);
+
+    svg.selectAll("path")
+      .data(geo.features)
+      .enter()
+      .append("path")
+      .attr("d", path)
+      .attr("fill", "#0f172a")
+      .attr("stroke", "#00c8ff")
+      .attr("stroke-width", 0.5)
+      .on("mouseover", function () { d3.select(this).attr("fill", "#1e293b"); })
+      .on("mouseout",  function () { d3.select(this).attr("fill", "#0f172a"); })
+      .on("click", function (e, d) {
+        const rawName =
+          d.properties.st_nm  ||
+          d.properties.NAME_1 ||
+          d.properties.name   ||
+          d.properties.State  ||
+          d.properties.state;
+
+        const stateName = normalizeState(rawName);
+
+        // FIX 3: Map click now syncs the state dropdown
+        const stateSelect = document.getElementById("state");
+        let matched = false;
+        for (let opt of stateSelect.options) {
+          if (opt.value === stateName || opt.text === stateName) {
+            stateSelect.value = opt.value;
+            matched = true;
+            break;
+          }
+        }
+
+        document.getElementById("result").innerHTML =
+          `<p class="selected-state">📍 Selected: <b>${stateName}</b>${matched ? '' : ' (not in dropdown)'}</p>`;
+      });
+
+  } catch (err) {
+    console.error("Map error:", err);
+    document.getElementById("map").innerHTML =
+      `<p style="color:#ef4444;padding:20px">⚠️ Map failed: ${err.message}</p>`;
+  }
 }
 
 loadMap();
 
-
 function renderCharts(probs) {
-  const labels = Object.keys(probs); 
-  const values = Object.values(probs);
+  // FIX 4: Sort labels Low → Medium → High so colors always match correctly
+  const ORDER = ['Low', 'Medium', 'High'];
+  const entries = ORDER.filter(k => k in probs).map(k => [k, probs[k]]);
+  const labels = entries.map(e => e[0]);
+  const values = entries.map(e => e[1]);
 
-  
   if (barChartInstance) barChartInstance.destroy();
   barChartInstance = new Chart(document.getElementById('barChart'), {
     type: 'bar',
@@ -159,7 +203,6 @@ function renderCharts(probs) {
     }
   });
 
-  
   if (pieChartInstance) pieChartInstance.destroy();
   pieChartInstance = new Chart(document.getElementById('pieChart'), {
     type: 'doughnut',
@@ -187,7 +230,6 @@ function renderCharts(probs) {
   });
 }
 
-
 async function predict() {
   const state = document.getElementById('state').value;
   const rain  = document.getElementById('rain').value;
@@ -208,7 +250,6 @@ async function predict() {
       })
     });
 
-    
     const ct = res.headers.get('content-type') || '';
     if (!res.ok || !ct.includes('application/json')) {
       const text = await res.text();
@@ -216,6 +257,8 @@ async function predict() {
     }
 
     const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
     const color = COLORS[data.risk_level] || '#fff';
 
     document.getElementById('result').innerHTML = `
@@ -235,7 +278,6 @@ async function predict() {
       </div>
     `;
 
-    
     document.getElementById('charts-section').style.display = 'flex';
     renderCharts(data.probabilities);
 

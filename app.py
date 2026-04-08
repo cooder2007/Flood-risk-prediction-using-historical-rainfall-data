@@ -11,8 +11,15 @@ import os
 
 app = Flask(__name__)
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), 'flood_data.csv')
+# FIX 1: Use abspath so the path works regardless of where you run python from
+DATA_FILE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'flood_data.csv')
+
+# FIX 2: Validate CSV columns before training — gives clear error instead of cryptic crash
+required_cols = {'rainfall_mm', 'river_level_m', 'flood_level_m', 'risk_level'}
 df = pd.read_csv(DATA_FILE)
+missing = required_cols - set(df.columns)
+if missing:
+    raise ValueError(f"flood_data.csv is missing required columns: {missing}")
 
 features = ['rainfall_mm', 'river_level_m', 'flood_level_m']
 X = df[features].values
@@ -53,32 +60,43 @@ def stats():
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
-    data = request.get_json()
+    # FIX 3: Wrap entire predict in try/except so server never crashes on bad input
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON body received"}), 400
 
-    rain  = float(data['rainfall_mm'])
-    river = float(data['river_level_m'])
-    flood = float(data['flood_level_m'])
-    model_name = data.get('model', 'knn')
+        rain  = float(data['rainfall_mm'])
+        river = float(data['river_level_m'])
+        flood = float(data['flood_level_m'])
+        model_name = data.get('model', 'knn')
 
-    X_input = scaler.transform([[rain, river, flood]])
-    model, acc = MODELS.get(model_name, MODELS['knn'])
+        X_input = scaler.transform([[rain, river, flood]])
+        model, acc = MODELS.get(model_name, MODELS['knn'])
 
-    pred  = model.predict(X_input)[0]
-    probs = model.predict_proba(X_input)[0]
-    label = le.inverse_transform([pred])[0]
+        pred  = model.predict(X_input)[0]
+        probs = model.predict_proba(X_input)[0]
+        label = le.inverse_transform([pred])[0]
 
-    classes  = list(le.classes_)
-    prob_dict = {classes[i]: round(float(p) * 100, 1) for i, p in enumerate(probs)}
-    score_map = {'Low': 25, 'Medium': 60, 'High': 90}
+        classes   = list(le.classes_)
+        prob_dict = {classes[i]: round(float(p) * 100, 1) for i, p in enumerate(probs)}
+        score_map = {'Low': 25, 'Medium': 60, 'High': 90}
 
-    return jsonify({
-        "risk_level":     label,
-        "risk_score":     score_map[label],
-        "probabilities":  prob_dict,
-        "model_used":     model_name.upper(),
-        "model_accuracy": acc,
-        "flood_likely":   label != "Low"
-    })
+        return jsonify({
+            "risk_level":     label,
+            "risk_score":     score_map.get(label, 50),  # FIX 4: .get() avoids KeyError crash
+            "probabilities":  prob_dict,
+            "model_used":     model_name.upper(),
+            "model_accuracy": acc,
+            "flood_likely":   label != "Low"
+        })
+
+    except KeyError as e:
+        return jsonify({"error": f"Missing field: {e}"}), 400
+    except ValueError as e:
+        return jsonify({"error": f"Invalid value: {e}"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=3000)   # ✅ FIX: match the port your browser uses
+    app.run(debug=True, port=3000)
